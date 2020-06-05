@@ -1,4 +1,4 @@
-package com.kakao.kakaosearch
+package com.kakao.kakaosearch.view
 
 import android.app.SearchManager
 import android.content.Context
@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.widget.SearchView
+import com.kakao.kakaosearch.R
 
 class MainActivity : AppCompatActivity() {
 
