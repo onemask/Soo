@@ -2,70 +2,45 @@ package com.kakao.kakaosearch.search.vm
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
 import com.kakao.kakaosearch.base.BaseViewModel
 import com.kakao.kakaosearch.repository.KaKaoRepositoryImpl
 import com.kakao.kakaosearch.repository.model.Document
-import com.kakao.kakaosearch.search.paging.SearchDataSorceFactory
-import com.kakao.kakaosearch.search.paging.SearchDataSource
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoRepositoryImpl) :
-    BaseViewModel() {
+class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoRepositoryImpl) : BaseViewModel() {
 
-    private var dataSourceFactory: SearchDataSorceFactory? = null
+    private var _searchResult = MutableLiveData<List<Document>>()
+    val searchResult: LiveData<List<Document>>
+        get() = _searchResult
 
-    var pageData: LiveData<PagedList<Document>>? = null
-    var filter = MutableLiveData<MutableList<String>>().apply { listOf("all") }
-    var keyword: String = ""
+    private var _filter = MutableLiveData<List<String>>()
+    val filter: LiveData<List<String>>
+        get() = _filter
 
-    //var filterType?: String = ""
+    private var page = MutableLiveData<Int>().apply { value = 1 }
 
-    val type = mutableListOf("all")
-
-
-    init {
-        loadData()
+    fun setPage(nextPage: Int) {
+        page.value = nextPage
     }
 
-    fun updateData(keyword: String) {
-        this.keyword = keyword
-        dataSourceFactory?.invalidate()
-        Timber.d("filter list ${dataSourceFactory?.getFilter()}")
-        //?.let { filter.postValue(it) }
-    }
-
-    fun loadData(): LiveData<PagedList<Document>> {
-        val config = PagedList.Config.Builder()
-            .setEnablePlaceholders(false)
-            .setInitialLoadSizeHint(SearchDataSource.PAGE_SIZE)
-            .setPageSize(SearchDataSource.PAGE_SIZE)
-            .build()
-
-        dataSourceFactory?.clear()
-        dataSourceFactory = SearchDataSorceFactory(
-            repository = kakaoRepository,
-            mainViewModel = this,
-            filter = "blog"
-        )
-        pageData = LivePagedListBuilder<Int, Document>(dataSourceFactory!!, config).build()
-
-        return pageData!!
-    }
-
-    /*fun getSearch(keyword: String, page: Int = 1) {
-        kakaoRepository.getImageSearch(keyword, page = page)
+    fun getSearch(keyword: String) {
+        kakaoRepository.getImageSearch(keyword, page = page.value ?: 1)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 _searchResult.postValue(it.documents)
+                _filter.postValue(emptyList())
+                _filter.postValue(
+                    it.documents.map { it.collection }.distinct()
+                )
             }, {
                 Timber.e("${it.printStackTrace()}")
             })
             .addTo(disposable)
     }
-*/
 
 }
