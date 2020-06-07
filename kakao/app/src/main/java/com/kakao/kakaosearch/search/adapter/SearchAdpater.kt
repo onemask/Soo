@@ -1,6 +1,7 @@
 package com.kakao.kakaosearch.search.adapter
 
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.kakao.kakaosearch.R
 import com.kakao.kakaosearch.repository.model.Document
@@ -14,11 +15,10 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val filterDataSet = ArrayList<Document>()
     private val tempList = ArrayList<Document>()
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder = SearchViewHolder(parent.inflate(R.layout.item_kakao_image))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
+        SearchViewHolder(parent.inflate(R.layout.item_kakao_image))
 
     override fun getItemCount(): Int = dataSet.size
-
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) = (holder as SearchViewHolder).bind(dataSet[position])
 
     fun setData(data: List<Document>) {
         this.dataSet.clear()
@@ -45,7 +45,33 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             notifyDataSetChanged()
         }
     }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        (holder as SearchViewHolder).bind(dataSet[position])
+    }
+
+    class DiffCallback() : DiffUtil.ItemCallback<Document>() {
+        override fun areItemsTheSame(
+            oldItem: Document,
+            newItem: Document
+        ): Boolean {
+            return oldItem == newItem
+        }
+
+        override fun areContentsTheSame(
+            oldItem: Document,
+            newItem: Document
+        ): Boolean {
+            return (oldItem.collection == newItem.collection) && (oldItem.thumbnail_url == newItem.thumbnail_url) && (oldItem.image_url == newItem.image_url) && (oldItem.width == newItem.width)
+                    && (oldItem.height == newItem.height) && (oldItem.display_sitename == newItem.display_sitename) && (oldItem.doc_url == newItem.doc_url) && (oldItem.datetime == newItem.datetime)
+
+        }
+    }
+
+
 }
+
+
 
 
 
