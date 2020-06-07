@@ -1,9 +1,6 @@
 package com.kakao.kakaosearch.search
 
-import android.app.SearchManager
-import android.content.Context
 import android.os.Bundle
-import android.view.Menu
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -29,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var kaKaoRepository: KaKaoRepositoryImpl
 
+    private var searchKeyword: String = ""
     private val lists = mutableListOf("all")
     private val spinnerAdapter by lazy {
         ArrayAdapter<String>(
@@ -69,8 +67,9 @@ class MainActivity : AppCompatActivity() {
         rv.addOnScrollListener(object :
             EndlessRecyclerOnScrollListener(rv.layoutManager as LinearLayoutManager) {
             override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Timber.d("page $page")
                 viewModel.run {
-                    setPage(page)
+                    setPage(searchKeyword, page)
                 }
             }
         })
@@ -97,7 +96,8 @@ class MainActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.run {
                     if (this.isNotEmpty()) {
-                        viewModel.getSearch(keyword = this)
+                        searchKeyword = this
+                        viewModel.getSearch(searchkeyWord = searchKeyword)
                         spinner_filter.setSelection(0)
                     }
                 }
@@ -129,13 +129,5 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.options_search, menu)
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        (menu?.findItem(R.id.action_search)?.actionView as SearchView).apply {
-            setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        }
-        return true
-    }
 
 }

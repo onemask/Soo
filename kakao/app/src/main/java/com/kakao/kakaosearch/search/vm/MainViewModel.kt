@@ -11,7 +11,8 @@ import io.reactivex.schedulers.Schedulers
 import timber.log.Timber
 import javax.inject.Inject
 
-class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoRepositoryImpl) : BaseViewModel() {
+class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoRepositoryImpl) :
+    BaseViewModel() {
 
     private var _searchResult = MutableLiveData<List<Document>>()
     val searchResult: LiveData<List<Document>>
@@ -21,14 +22,19 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
     val filter: LiveData<List<String>>
         get() = _filter
 
+    private var _keyWord = MutableLiveData<String>()
+    val keyWord: LiveData<String>
+        get() = _keyWord
+
     private var page = MutableLiveData<Int>().apply { value = 1 }
 
-    fun setPage(nextPage: Int) {
+    fun setPage(searchkeyWord: String,nextPage: Int) {
         page.value = nextPage
+        getSearch(searchkeyWord)
     }
 
-    fun getSearch(keyword: String) {
-        kakaoRepository.getImageSearch(keyword, page = page.value ?: 1)
+    fun getSearch(searchkeyWord: String) {
+        kakaoRepository.getImageSearch(searchkeyWord, page = page.value ?: 1,size = PAGE_SIZE)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
@@ -41,6 +47,10 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
                 Timber.e("${it.printStackTrace()}")
             })
             .addTo(disposable)
+    }
+
+    companion object{
+        const val PAGE_SIZE = 20
     }
 
 }
