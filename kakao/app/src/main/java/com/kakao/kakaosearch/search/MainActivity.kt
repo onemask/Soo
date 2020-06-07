@@ -4,16 +4,21 @@ import android.app.SearchManager
 import android.content.Context
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SearchView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.kakao.kakaosearch.R
 import com.kakao.kakaosearch.repository.KaKaoRepositoryImpl
-import com.kakao.kakaosearch.search.paging.DocumentPagingAdapter
+import com.kakao.kakaosearch.search.adapter.SearchAdapter
 import com.kakao.kakaosearch.search.vm.MainViewModel
 import com.kakao.kakaosearch.search.vm.MainViewModelFactory
+import com.kakao.utils.EndlessRecyclerOnScrollListener
 import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
@@ -24,14 +29,16 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var kaKaoRepository: KaKaoRepositoryImpl
 
-    private val pagingAdapter by lazy { DocumentPagingAdapter() }
+    private val lists = mutableListOf("all")
     private val spinnerAdapter by lazy {
         ArrayAdapter<String>(
             this,
             R.layout.support_simple_spinner_dropdown_item,
-            listOf("all")
+            lists
         )
     }
+
+    private val adapter by lazy { SearchAdapter() }
 
     private val viewModelFactory by lazy {
         MainViewModelFactory(kaKaoRepository)
@@ -56,17 +63,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupAdapter() {
-        rv.adapter = pagingAdapter
+        rv.adapter = adapter
         spinner_filter.adapter = spinnerAdapter
+
+        rv.addOnScrollListener(object :
+            EndlessRecyclerOnScrollListener(rv.layoutManager as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                viewModel.run {
+                    setPage(page)
+                }
+            }
+        })
     }
 
     private fun setBind() {
-        viewModel.pageData?.observe(this, Observer {
-            pagingAdapter.submitList(it)
+        viewModel.searchResult.observe(this, Observer {
+            adapter.setData(it)
         })
 
         viewModel.filter.observe(this, Observer {
-            spinnerAdapter.addAll(it)
+            lists.apply {
+                clear()
+                add("all")
+                addAll(it)
+            }
             spinnerAdapter.notifyDataSetChanged()
         })
     }
@@ -77,9 +97,8 @@ class MainActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.run {
                     if (this.isNotEmpty()) {
-                        Timber.d("keyword $this")
-                        viewModel.keyword = this
-                        viewModel.updateData(this)
+                        viewModel.getSearch(keyword = this)
+                        spinner_filter.setSelection(0)
                     }
                 }
                 return false
@@ -90,6 +109,24 @@ class MainActivity : AppCompatActivity() {
             }
 
         })
+
+        spinner_filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+
+            }
+
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                Timber.d("${lists[position]}")
+                adapter.filterData(lists[position])
+            }
+
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -101,9 +138,4 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-
-}
-
-private fun androidx.appcompat.widget.SearchView.setOnQueryTextListener() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 }
