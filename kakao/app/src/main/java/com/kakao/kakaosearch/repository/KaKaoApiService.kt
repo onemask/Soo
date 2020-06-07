@@ -11,8 +11,8 @@ interface KaKaoApiService {
     fun getImageSearch(
         @Header("Authorization") header: String,
         @Query("query") query: String,
-        @Query("sort") sort: String?,
-        @Query("page") page: Int?,
-        @Query("size") size: Int?
+        @Query("sort") sort: String? = null,
+        @Query("page") page: Int,
+        @Query("size") size: Int? = null
     ): Observable<SearchResponse>
 }

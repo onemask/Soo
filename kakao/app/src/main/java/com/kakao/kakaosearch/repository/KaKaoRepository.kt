@@ -7,8 +7,8 @@ interface KaKaoRepository {
 
     fun getImageSearch(
         query: String,
-        sort: String?,
+        sort: String? = null,
         page: Int,
-        size: Int?
+        size: Int? = null
     ): Observable<SearchResponse>
 }

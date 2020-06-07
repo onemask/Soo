@@ -6,7 +6,7 @@ import io.reactivex.Observable
 
 class KaKaoRepositoryImpl(private val apiService: KaKaoApiService) : KaKaoRepository {
 
-    private val authorization =  AUTHORIZATION
+    private val authorization = AUTHORIZATION
 
     override fun getImageSearch(
         query: String,
