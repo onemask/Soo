@@ -1,4 +1,4 @@
-package com.kakao.kakaosearch.search.paging.viewholder
+package com.kakao.kakaosearch.search.adapter.viewholder
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
