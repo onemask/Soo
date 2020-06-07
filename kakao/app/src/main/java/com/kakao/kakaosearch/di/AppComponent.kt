@@ -2,6 +2,7 @@ package com.kakao.kakaosearch.di
 
 import android.app.Application
 import com.kakao.kakaosearch.app.KakaoSearchApplication
+import com.kakao.kakaosearch.di.module.ActivityBuilder
 import com.kakao.kakaosearch.di.module.DataModule
 import com.kakao.kakaosearch.di.module.NetworkModule
 import dagger.BindsInstance
@@ -15,7 +16,8 @@ import javax.inject.Singleton
     modules = [
         AndroidSupportInjectionModule::class,
         NetworkModule::class,
-        DataModule::class
+        DataModule::class,
+        ActivityBuilder::class
     ]
 )
 
