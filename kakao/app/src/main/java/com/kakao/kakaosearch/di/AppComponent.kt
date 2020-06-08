@@ -5,6 +5,7 @@ import com.kakao.kakaosearch.app.KakaoSearchApplication
 import com.kakao.kakaosearch.di.module.ActivityBuilder
 import com.kakao.kakaosearch.di.module.DataModule
 import com.kakao.kakaosearch.di.module.NetworkModule
+import com.kakao.kakaosearch.di.module.ViewModelFactoryModule
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.AndroidInjector
@@ -17,16 +18,18 @@ import javax.inject.Singleton
         AndroidSupportInjectionModule::class,
         NetworkModule::class,
         DataModule::class,
-        ActivityBuilder::class
+        ActivityBuilder::class,
+        ViewModelFactoryModule::class
     ]
 )
 
 interface AppComponent : AndroidInjector<KakaoSearchApplication> {
     @Component.Builder
-    interface  Builder{
+    interface Builder {
         @BindsInstance
-        fun application(application: KakaoSearchApplication) : Builder
-        fun build() : AppComponent
+        fun application(application: KakaoSearchApplication): Builder
+        fun build(): AppComponent
     }
-    fun inject(app : Application)
+
+    fun inject(app: Application)
 }
