@@ -14,34 +14,76 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoRepositoryImpl) :
     BaseViewModel() {
 
-    private var _searchResult = MutableLiveData<List<Document>>()
+    private val _searchResult = MutableLiveData<List<Document>>()
     val searchResult: LiveData<List<Document>>
         get() = _searchResult
 
-    private var _filter = MutableLiveData<List<String>>()
-    val filter: LiveData<List<String>>
-        get() = _filter
+    private val _filterList = MutableLiveData<List<String>>()
+    val filterList: LiveData<List<String>>
+        get() = _filterList
 
+    private val itemList = mutableListOf<Document>()
+    private var currentFilter: String? = null
+
+    var searchKeyword = ""
     var currentPage: Long = 1L
     var totalPage: Long = 1L
 
-    fun getSearch(searchKeyword: String) {
-        kakaoRepository.getImageSearch(searchKeyword, page = currentPage.toInt(), size = PAGE_SIZE)
+    fun onClick(searchKeyword: String, isNext: Boolean) {
+        if (searchKeyword.isNotEmpty())
+            getSearch(searchKeyword, isNext)
+    }
+
+    fun loadMore() {
+        if (currentPage < totalPage) {
+            currentPage++
+            getSearch(searchKeyword, true)
+        }
+    }
+
+    fun setFilter(pickFilter: String) {
+        currentFilter = pickFilter
+        if (pickFilter != "all") {
+            _searchResult.value = itemList.filter { it.collection == currentFilter }
+        } else {
+            _searchResult.value = itemList
+        }
+    }
+
+    fun getSearch(searchKeyword: String, isNext: Boolean) {
+        //false
+        if (!isNext) {
+            setupPage()
+            itemList.clear()
+        }
+
+        kakaoRepository.getImageSearch(
+            searchKeyword,
+            page = currentPage.toInt(),
+            size = PAGE_SIZE
+        )
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
             .doOnSubscribe { _loadingState.postValue(true) }
-            .subscribe({
-                _searchResult.postValue(it.documents)
+            .subscribe({ response ->
+                totalPage = response.meta.pageable_count
+                itemList.addAll(response.documents)
+                _filterList.value = response.documents.map { it.collection }.distinct()
                 _loadingState.postValue(false)
-                _filter.run {
-                    postValue(emptyList())
-                    postValue(it.documents.map { it.collection }.distinct())
-                }
-                totalPage = it.meta.pageable_count
+                if (currentFilter != "all") {
+                    _searchResult.value = itemList.filter { it.collection == currentFilter }
+                } else
+                    _searchResult.value = itemList
             }, {
                 Timber.e("${it.printStackTrace()}")
             })
             .addTo(disposable)
+    }
+
+
+    private fun setupPage() {
+        currentPage = 1L
+        totalPage = 1L
     }
 
     companion object {
