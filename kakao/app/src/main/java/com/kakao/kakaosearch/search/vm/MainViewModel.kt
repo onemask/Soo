@@ -28,17 +28,19 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
 
     private var page = MutableLiveData<Int>().apply { value = 1 }
 
-    fun setPage(searchkeyWord: String,nextPage: Int) {
+    fun setPage(searchkeyWord: String, nextPage: Int) {
         page.value = nextPage
         getSearch(searchkeyWord)
     }
 
-    fun getSearch(searchkeyWord: String) {
-        kakaoRepository.getImageSearch(searchkeyWord, page = page.value ?: 1,size = PAGE_SIZE)
+    fun getSearch(searchKeyword: String) {
+        kakaoRepository.getImageSearch(searchKeyword, page = page.value ?: 1, size = PAGE_SIZE)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+            .doOnSubscribe{_loadingState.postValue(true)}
             .subscribe({
                 _searchResult.postValue(it.documents)
+                _loadingState.postValue(false)
                 _filter.postValue(emptyList())
                 _filter.postValue(
                     it.documents.map { it.collection }.distinct()
@@ -49,7 +51,7 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
             .addTo(disposable)
     }
 
-    companion object{
+    companion object {
         const val PAGE_SIZE = 20
     }
 
