@@ -39,9 +39,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
 
     override fun onStart() {
         super.onStart()
-        setupView()
         setupAdapter()
         setBind()
+        setupListener()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,22 +59,15 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
 
     private fun setupAdapter() {
         rv.adapter = adapter
-        spinner_filter.adapter = spinnerAdapter
-
-        rv.addOnScrollListener(object :
-            EndlessRecyclerOnScrollListener(rv.layoutManager as LinearLayoutManager) {
-            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
-                Timber.d("page $page")
-                viewModel.run {
-                    setPage(searchKeyword, page)
-                }
-            }
-        })
+        sp_filter.adapter = spinnerAdapter
     }
 
     private fun setBind() {
         viewModel.searchResult.observe(this, Observer {
-            adapter.setData(it)
+            if (viewModel.currentPage == 1L)
+                adapter.setData(it)
+            else
+                adapter.addData(it)
         })
 
         viewModel.filter.observe(this, Observer {
@@ -87,7 +80,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
         })
     }
 
-    private fun setupView() {
+    private fun setupListener() {
         sv.setOnQueryTextListener(object : SearchView.OnQueryTextListener,
             androidx.appcompat.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -95,7 +88,7 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
                     if (this.isNotEmpty()) {
                         searchKeyword = this
                         viewModel.getSearch(searchKeyword = searchKeyword)
-                        spinner_filter.setSelection(0)
+                        sp_filter.setSelection(0)
                     }
                 }
                 return false
@@ -104,10 +97,9 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
             override fun onQueryTextChange(newText: String?): Boolean {
                 return false
             }
-
         })
 
-        spinner_filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        sp_filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -118,5 +110,16 @@ class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.a
                 adapter.filterData(lists[position])
             }
         }
+
+        rv.addOnScrollListener(object : EndlessRecyclerOnScrollListener(rv.layoutManager as LinearLayoutManager) {
+            override fun onLoadMore(page: Int, totalItemsCount: Int, view: RecyclerView?) {
+                Timber.d("page $page")
+                viewModel.currentPage = page.toLong()
+                if (viewModel.currentPage < viewModel.totalPage) {
+                    viewModel.getSearch(searchKeyword)
+                    viewModel.currentPage++
+                }
+            }
+        })
     }
 }
