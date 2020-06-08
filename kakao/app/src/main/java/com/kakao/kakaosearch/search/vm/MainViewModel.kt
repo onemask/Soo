@@ -22,29 +22,22 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
     val filter: LiveData<List<String>>
         get() = _filter
 
-    private var _keyWord = MutableLiveData<String>()
-    val keyWord: LiveData<String>
-        get() = _keyWord
-
-    private var page = MutableLiveData<Int>().apply { value = 1 }
-
-    fun setPage(searchkeyWord: String, nextPage: Int) {
-        page.value = nextPage
-        getSearch(searchkeyWord)
-    }
+    var currentPage: Long = 1L
+    var totalPage: Long = 1L
 
     fun getSearch(searchKeyword: String) {
-        kakaoRepository.getImageSearch(searchKeyword, page = page.value ?: 1, size = PAGE_SIZE)
+        kakaoRepository.getImageSearch(searchKeyword, page = currentPage.toInt(), size = PAGE_SIZE)
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
-            .doOnSubscribe{_loadingState.postValue(true)}
+            .doOnSubscribe { _loadingState.postValue(true) }
             .subscribe({
                 _searchResult.postValue(it.documents)
                 _loadingState.postValue(false)
-                _filter.postValue(emptyList())
-                _filter.postValue(
-                    it.documents.map { it.collection }.distinct()
-                )
+                _filter.run {
+                    postValue(emptyList())
+                    postValue(it.documents.map { it.collection }.distinct())
+                }
+                totalPage = it.meta.pageable_count
             }, {
                 Timber.e("${it.printStackTrace()}")
             })
