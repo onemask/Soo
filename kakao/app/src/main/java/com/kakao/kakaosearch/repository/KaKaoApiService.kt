@@ -1,7 +1,7 @@
 package com.kakao.kakaosearch.repository
 
 import com.kakao.kakaosearch.repository.model.SearchResponse
-import io.reactivex.Observable
+import io.reactivex.Single
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query
@@ -14,5 +14,5 @@ interface KaKaoApiService {
         @Query("sort") sort: String? = null,
         @Query("page") page: Int,
         @Query("size") size: Int? = null
-    ): Observable<SearchResponse>
+    ): Single<SearchResponse>
 }

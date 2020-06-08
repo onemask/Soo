@@ -2,7 +2,7 @@ package com.kakao.kakaosearch.repository
 
 import com.kakao.constants.Constants.AUTHORIZATION
 import com.kakao.kakaosearch.repository.model.SearchResponse
-import io.reactivex.Observable
+import io.reactivex.Single
 
 class KaKaoRepositoryImpl(private val apiService: KaKaoApiService) : KaKaoRepository {
 
@@ -13,7 +13,7 @@ class KaKaoRepositoryImpl(private val apiService: KaKaoApiService) : KaKaoReposi
         sort: String?,
         page: Int,
         size: Int?
-    ): Observable<SearchResponse> {
+    ): Single<SearchResponse> {
         return apiService.getImageSearch(authorization, query, sort, page, size)
     }
 
