@@ -5,29 +5,26 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.SearchView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.kakao.kakaosearch.R
+import com.kakao.kakaosearch.base.BaseActivity
+import com.kakao.kakaosearch.databinding.ActivityMainBinding
 import com.kakao.kakaosearch.repository.KaKaoRepositoryImpl
 import com.kakao.kakaosearch.search.adapter.SearchAdapter
 import com.kakao.kakaosearch.search.vm.MainViewModel
 import com.kakao.kakaosearch.search.vm.MainViewModelFactory
 import com.kakao.utils.EndlessRecyclerOnScrollListener
-import dagger.android.AndroidInjection
 import kotlinx.android.synthetic.main.activity_main.*
 import timber.log.Timber
 import javax.inject.Inject
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity<ActivityMainBinding, MainViewModel>(R.layout.activity_main) {
 
     @Inject
     lateinit var kaKaoRepository: KaKaoRepositoryImpl
-
-    private var searchKeyword: String = ""
-    private val lists = mutableListOf("all")
     private val spinnerAdapter by lazy {
         ArrayAdapter<String>(
             this,
@@ -35,29 +32,29 @@ class MainActivity : AppCompatActivity() {
             lists
         )
     }
-
     private val adapter by lazy { SearchAdapter() }
+    private val viewModelFactory by lazy { MainViewModelFactory(kaKaoRepository) }
+    private var searchKeyword: String = ""
+    private val lists = mutableListOf("all")
 
-    private val viewModelFactory by lazy {
-        MainViewModelFactory(kaKaoRepository)
+    override fun onStart() {
+        super.onStart()
+        setupView()
+        setupAdapter()
+        setBind()
     }
 
-    private val viewModel by lazy {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding.vm = viewModel
+    }
+
+    override val viewModel by lazy {
         ViewModelProviders.of(
             this@MainActivity,
             viewModelFactory
         )[MainViewModel::class.java]
 
-    }
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        AndroidInjection.inject(this)
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        setupAdapter()
-        setupView()
-        setBind()
     }
 
     private fun setupAdapter() {
@@ -97,7 +94,7 @@ class MainActivity : AppCompatActivity() {
                 query?.run {
                     if (this.isNotEmpty()) {
                         searchKeyword = this
-                        viewModel.getSearch(searchkeyWord = searchKeyword)
+                        viewModel.getSearch(searchKeyword = searchKeyword)
                         spinner_filter.setSelection(0)
                     }
                 }
@@ -111,23 +108,15 @@ class MainActivity : AppCompatActivity() {
         })
 
         spinner_filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-
-            }
-
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
                 position: Int,
                 id: Long
             ) {
-                Timber.d("${lists[position]}")
                 adapter.filterData(lists[position])
             }
-
         }
-
     }
-
-
 }
