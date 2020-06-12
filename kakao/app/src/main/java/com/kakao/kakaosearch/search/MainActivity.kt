@@ -14,6 +14,7 @@ import com.kakao.kakaosearch.databinding.ActivityMainBinding
 import com.kakao.kakaosearch.search.adapter.SearchAdapter
 import com.kakao.kakaosearch.search.vm.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
+import timber.log.Timber
 import javax.inject.Inject
 
 class MainActivity : BaseActivity<ActivityMainBinding>(
@@ -66,13 +67,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(
                     add("all")
                     addAll(it)
                 }
-                spinnerAdapter.notifyDataSetChanged()
             })
         }
     }
 
     private fun setupListener() {
-        sp_filter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        binding.spFilter.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) = Unit
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -84,7 +84,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(
             }
         }
 
-        rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        binding.rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
                 if (newState == RecyclerView.SCROLL_STATE_IDLE) return
