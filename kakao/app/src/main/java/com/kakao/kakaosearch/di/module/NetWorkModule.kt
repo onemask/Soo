@@ -9,7 +9,6 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import timber.log.Timber
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -18,21 +17,15 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provieHttpLogginInterceptor() : HttpLoggingInterceptor {
-        val interceptor = HttpLoggingInterceptor(HttpLoggingInterceptor.Logger { message ->
-            Timber.d(message)
-        })
-        interceptor.level = HttpLoggingInterceptor.Level.BODY
-        return interceptor
-    }
+    fun provideHttpLogginInterceptor(): HttpLoggingInterceptor =
+        HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
 
     @Provides
     @Singleton
-    fun provieOkHttpClient(logger : HttpLoggingInterceptor) : OkHttpClient {
-        return  OkHttpClient.Builder().apply {
-            addInterceptor(logger)
-        }.build()
-    }
+    fun provideOkHttpClient(logger: HttpLoggingInterceptor) =
+        OkHttpClient.Builder().apply { addInterceptor(logger) }.build()
 
     @Provides
     @Singleton
@@ -41,7 +34,6 @@ class NetworkModule {
     @Provides
     @Singleton
     fun provideGsonConverter(): GsonConverterFactory = GsonConverterFactory.create()
-
 
     @Provides
     @Singleton
