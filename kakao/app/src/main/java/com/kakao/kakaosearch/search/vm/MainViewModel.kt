@@ -50,7 +50,7 @@ class MainViewModel @Inject constructor(private val kakaoRepository: KaKaoReposi
         }
     }
 
-    fun getSearch(searchKeyword: String, isNext: Boolean) {
+    private fun getSearch(searchKeyword: String, isNext: Boolean) {
         //false
         if (!isNext) {
             setupPage()
