@@ -2,7 +2,7 @@ package com.kakao.kakaosearch.di
 
 import android.app.Application
 import com.kakao.kakaosearch.app.KakaoSearchApplication
-import com.kakao.kakaosearch.di.module.ActivityBuilder
+import com.kakao.kakaosearch.di.module.ActivityBinder
 import com.kakao.kakaosearch.di.module.DataModule
 import com.kakao.kakaosearch.di.module.NetworkModule
 import com.kakao.kakaosearch.di.module.ViewModelFactoryModule
@@ -18,7 +18,7 @@ import javax.inject.Singleton
         AndroidSupportInjectionModule::class,
         NetworkModule::class,
         DataModule::class,
-        ActivityBuilder::class,
+        ActivityBinder::class,
         ViewModelFactoryModule::class
     ]
 )
