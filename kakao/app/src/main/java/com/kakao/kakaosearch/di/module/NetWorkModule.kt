@@ -17,7 +17,7 @@ class NetworkModule {
 
     @Provides
     @Singleton
-    fun provideHttpLogginInterceptor(): HttpLoggingInterceptor =
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }
@@ -38,7 +38,7 @@ class NetworkModule {
     @Provides
     @Singleton
     @Named("KaKaoHost")
-    fun provideUpbitApiService(
+    fun provideKaKaoHost(
         client: OkHttpClient,
         rxJava2CallAdapterFactory: RxJava2CallAdapterFactory,
         gsonConverterFactory: GsonConverterFactory
